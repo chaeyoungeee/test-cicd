@@ -23,29 +23,36 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # 1. Java 17 setting
+    # Java 17 설정
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+        
+    # application-secret.yml 생성
+    - name: make application-secret.yml
+      run: |
+        cd ./src/main/resources
+        touch ./application-secret.yml
+        echo "${{ secrets.APPLICATION_SECRET }}" > ./application-secret.yml
+      shell: bash
 
-
-    # 2. Spring boot Application build
+    # Spring boot Application build
     - name: Build with Gradle 8.5
       run: gradle build
 
-    # 3. Docker Image build
+    # Docker Image build
     - name : docker image build
       run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/github-actions-demo .
 
-     # 4. DockerHub login
+     # DockerHub login
     - name: docker login
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    # 5. DockerHub Image push
+    # DockerHub Image push
     - name: dockerhub push
       run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/github-actions-demo
